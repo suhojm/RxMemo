@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import RxDataSources
 
-struct Memo: Equatable {
+struct Memo: Equatable, IdentifiableType {
     var content: String // store memo
     var insertDate: Date
     var identity: String // to idenfity memo

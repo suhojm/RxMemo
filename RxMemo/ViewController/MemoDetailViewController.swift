@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
 class MemoDetailViewController: UIViewController, ViewModelBindableType {
 
@@ -54,6 +56,23 @@ class MemoDetailViewController: UIViewController, ViewModelBindableType {
 //        backButton.rx.action = viewModel.popAction
 //        navigationItem.hidesBackButton = true
 //        navigationItem.leftBarButtonItem = backButton
+        
+        
+        editButton.rx.action = viewModel.makeEditAction()
+        
+        deleteButton.rx.action = viewModel.makeDeleteAction()
+        
+        // TODO: implement below using Action instead of tap
+        shareButton.rx.tap
+            .throttle(.milliseconds(500), scheduler:  MainScheduler.instance) // to avoid double tap
+            .subscribe(onNext: { [weak self] in //_ in
+                guard let memo = self?.viewModel.memo.content else { return }
+                
+                let vc = UIActivityViewController(activityItems: [memo], applicationActivities: nil)
+                self?.present(vc, animated: true, completion: nil)
+            })
+            .disposed(by: rx.disposeBag)
+        
     }
 
     /*

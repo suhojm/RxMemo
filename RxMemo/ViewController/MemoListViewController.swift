@@ -32,9 +32,7 @@ class MemoListViewController: UIViewController, ViewModelBindableType {
             .disposed(by: rx.disposeBag)
         
         viewModel.memoList
-            .bind(to: listTableView.rx.items(cellIdentifier: "cell")) { row, memo, cell in
-                cell.textLabel?.text = memo.content
-            }
+            .bind(to: listTableView.rx.items(dataSource: viewModel.dataSource))
             .disposed(by: rx.disposeBag)
         
         addButton.rx.action = viewModel.makeCreateAction()
@@ -47,6 +45,17 @@ class MemoListViewController: UIViewController, ViewModelBindableType {
             .map { $0.0 }
             .bind(to: viewModel.detailAction.inputs)
             .disposed(by: rx.disposeBag)
+        
+        
+        // instaed of implement the delegate method directly,
+        // use the method the one RxCocoa provides
+        listTableView.rx.modelDeleted(Memo.self) // this method returns Control event, and control event release next event whenever memo gets deleted.
+            .bind(to: viewModel.deleteAction.inputs) // to bind control event with delete action
+            .disposed(by: rx.disposeBag)
+        
+        // when delete button is tapped, memo list releases new array, and table view reloads entire cells without any animation
+        
+        
         
     }
 

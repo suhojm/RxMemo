@@ -5,16 +5,33 @@
 //  Created by Jung Mo Ku on 12/10/20.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 import Action
+import RxDataSources
+
+// data - Int, raw data - Memo
+typealias MemoSectionModel = AnimatableSectionModel<Int, Memo>
 
 class MemoListViewModel: CommonViewModel{
     // dependency in constructor
     // handle binding...
     
-    var memoList: Observable<[Memo]> {
+    
+    let dataSource: RxTableViewSectionedAnimatedDataSource<MemoSectionModel> = {
+        let ds = RxTableViewSectionedAnimatedDataSource<MemoSectionModel>(configureCell: { (dataSource, tableView, indexPath, memo) -> UITableViewCell in
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+            cell.textLabel?.text = memo.content
+            return cell
+        })
+        
+        ds.canEditRowAtIndexPath = { _, _ in return true }
+        return ds
+    }()
+    
+    
+    var memoList: Observable<[MemoSectionModel]> {
         return storage.memoList()
     }
     
@@ -56,4 +73,10 @@ class MemoListViewModel: CommonViewModel{
         }
     }()
     
+    // Swift.Never????
+    lazy var deleteAction: Action<Memo, Swift.Never> = {
+        return Action { memo in
+            return self.storage.delete(memo: memo).ignoreElements()
+        }
+    }()
 }
